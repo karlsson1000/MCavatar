@@ -4,8 +4,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"mcavatar/internal/handlers"
+	"mcavatar/internal/stats"
 )
 
 func main() {
@@ -14,14 +16,23 @@ func main() {
 		port = "8080"
 	}
 
+	stats.Init("/data/stats.db")
+
 	mux := http.NewServeMux()
-	mux.HandleFunc("/avatar/", handlers.RateLimit(handlers.ServeAvatar))
-	mux.HandleFunc("/skin/", handlers.RateLimit(handlers.ServeSkin))
-	mux.HandleFunc("/body/", handlers.RateLimit(handlers.ServeBody))
-	mux.HandleFunc("/bust/", handlers.RateLimit(handlers.ServeBust))
-	mux.HandleFunc("/uuid/", handlers.RateLimit(handlers.ServeUUID))
+	mux.HandleFunc("/avatar/", handlers.RateLimit(handlers.TrackRequests(handlers.ServeAvatar)))
+	mux.HandleFunc("/skin/", handlers.RateLimit(handlers.TrackRequests(handlers.ServeSkin)))
+	mux.HandleFunc("/body/", handlers.RateLimit(handlers.TrackRequests(handlers.ServeBody)))
+	mux.HandleFunc("/bust/", handlers.RateLimit(handlers.TrackRequests(handlers.ServeBust)))
+	mux.HandleFunc("/uuid/", handlers.RateLimit(handlers.TrackRequests(handlers.ServeUUID)))
 	mux.HandleFunc("/", handlers.ServeHealth)
 
+	srv := &http.Server{
+		Addr:         ":" + port,
+		Handler:      mux,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 15 * time.Second,
+	}
+
 	log.Printf("listening on :%s", port)
-	log.Fatal(http.ListenAndServe(":"+port, mux))
+	log.Fatal(srv.ListenAndServe())
 }

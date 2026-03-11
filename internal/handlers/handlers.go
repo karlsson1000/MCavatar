@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"mcavatar/internal/mc"
+	"mcavatar/internal/stats"
 )
 
 func writePNG(w http.ResponseWriter, data []byte) {
@@ -23,14 +24,22 @@ func writeError(w http.ResponseWriter, status int, msg string) {
 	writeJSON(w, status, map[string]string{"error": msg})
 }
 
+func TrackRequests(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		stats.IncrementRequests()
+		next(w, r)
+	}
+}
+
 func ServeHealth(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		writeError(w, 404, "not found")
 		return
 	}
 	writeJSON(w, 200, map[string]any{
-		"api":    "mcavatar",
-		"status": "ok",
+		"api":            "mcavatar",
+		"status":         "ok",
+		"total_requests": stats.GetTotalRequests(),
 	})
 }
 
