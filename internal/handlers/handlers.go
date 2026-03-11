@@ -134,9 +134,13 @@ func ServeUUID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, 200, map[string]string{
-		"username":    profile.Name,
-		"uuid":        profile.ID,
-		"uuid_dashed": mc.FormatUUID(profile.ID),
+	writeJSON(w, 200, struct {
+		Username    string `json:"username"`
+		UUID        string `json:"uuid"`
+		TrimmedUUID string `json:"trimmed_uuid"`
+	}{
+		Username:    profile.Name,
+		UUID:        mc.FormatUUID(profile.ID),
+		TrimmedUUID: profile.ID,
 	})
 }
