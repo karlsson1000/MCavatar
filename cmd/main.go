@@ -24,7 +24,8 @@ func main() {
 	mux.HandleFunc("/body/", handlers.RateLimit(handlers.TrackRequests(handlers.ServeBody)))
 	mux.HandleFunc("/bust/", handlers.RateLimit(handlers.TrackRequests(handlers.ServeBust)))
 	mux.HandleFunc("/uuid/", handlers.RateLimit(handlers.TrackRequests(handlers.ServeUUID)))
-	mux.HandleFunc("/", handlers.ServeHealth)
+	mux.HandleFunc("/health", handlers.ServeHealth)
+	mux.HandleFunc("/", handlers.ServeNotFound)
 
 	srv := &http.Server{
 		Addr:         ":" + port,

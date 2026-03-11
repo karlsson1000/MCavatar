@@ -32,15 +32,15 @@ func TrackRequests(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func ServeHealth(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		writeError(w, 404, "not found")
-		return
-	}
 	writeJSON(w, 200, map[string]any{
 		"api":            "mcavatar",
 		"status":         "ok",
 		"total_requests": stats.GetTotalRequests(),
 	})
+}
+
+func ServeNotFound(w http.ResponseWriter, r *http.Request) {
+	writeError(w, 404, "not found")
 }
 
 func ServeAvatar(w http.ResponseWriter, r *http.Request) {
