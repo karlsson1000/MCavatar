@@ -32,6 +32,7 @@ func TrackRequests(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func ServeHealth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	writeJSON(w, 200, map[string]any{
 		"api":            "mcavatar",
 		"status":         "ok",
