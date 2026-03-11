@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	rateLimitMax = 60
+	rateLimitMax = 600
 	rateWindow   = time.Minute
 )
 
