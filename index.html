@@ -8,7 +8,7 @@
   <link rel="icon" href="/avatar/5487e8c6ef7f4c4fbb8f9f0766259f6d/32" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap&font-display=swap" rel="stylesheet" />
 </head>
 <body>
 
@@ -20,15 +20,15 @@
       </h1>
       <p class="desc">Avatars, skins, body renders, and UUID lookups for any player.</p>
       <div class="avatars-strip">
-        <img src="/avatar/853c80ef3c3749fdaa49938b674adae6/128" alt="jeb_" />
-        <img src="/avatar/61699b2ed3274a019f1e0ea8c3f06bc6/128" alt="Dinnerbone" />
-        <img src="/avatar/e6b5c088068044df9e1b9bf11792291b/128" alt="Grumm" />
-        <img src="/avatar/1e18d5ff643d45c8b50943b8461d8614/128" alt="deadmau5" />
-        <img src="/avatar/b876ec32e396476ba1158438d83c67d4/128" alt="Technoblade" />
-        <img src="/avatar/853c80ef3c3749fdaa49938b674adae6/128" alt="jeb_" />
-        <img src="/avatar/61699b2ed3274a019f1e0ea8c3f06bc6/128" alt="Dinnerbone" />
-        <img src="/avatar/e6b5c088068044df9e1b9bf11792291b/128" alt="Grumm" />
-        <img src="/avatar/1e18d5ff643d45c8b50943b8461d8614/128" alt="deadmau5" />
+        <img src="/avatar/853c80ef3c3749fdaa49938b674adae6/128" width="64" height="64" alt="jeb_" />
+        <img src="/avatar/61699b2ed3274a019f1e0ea8c3f06bc6/128" width="64" height="64" alt="Dinnerbone" />
+        <img src="/avatar/e6b5c088068044df9e1b9bf11792291b/128" width="64" height="64" alt="Grumm" />
+        <img src="/avatar/1e18d5ff643d45c8b50943b8461d8614/128" width="64" height="64" alt="deadmau5" />
+        <img src="/avatar/b876ec32e396476ba1158438d83c67d4/128" width="64" height="64" alt="Technoblade" />
+        <img src="/avatar/853c80ef3c3749fdaa49938b674adae6/128" width="64" height="64" alt="jeb_" />
+        <img src="/avatar/61699b2ed3274a019f1e0ea8c3f06bc6/128" width="64" height="64" alt="Dinnerbone" />
+        <img src="/avatar/e6b5c088068044df9e1b9bf11792291b/128" width="64" height="64" alt="Grumm" />
+        <img src="/avatar/1e18d5ff643d45c8b50943b8461d8614/128" width="64" height="64" alt="deadmau5" />
       </div>
     </div>
   </div>
@@ -198,7 +198,17 @@
       line-height: 1.6;
     }
 
-    img { image-rendering: pixelated; display: block; }
+    img {
+      image-rendering: pixelated;
+      display: block;
+    }
+
+    .avatars-strip img {
+      width: 64px;
+      height: 64px;
+      aspect-ratio: 1 / 1;
+    }
+
     a { color: inherit; text-decoration: none; }
 
     .wrap {
@@ -236,8 +246,6 @@
     .avatars-strip { display: flex; gap: 8px; }
 
     .avatars-strip img {
-      width: 64px;
-      height: 64px;
       border-radius: 4px;
       opacity: 0.85;
     }
