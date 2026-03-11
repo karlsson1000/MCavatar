@@ -25,7 +25,13 @@ func main() {
 	mux.HandleFunc("/bust/", handlers.RateLimit(handlers.TrackRequests(handlers.ServeBust)))
 	mux.HandleFunc("/uuid/", handlers.RateLimit(handlers.TrackRequests(handlers.ServeUUID)))
 	mux.HandleFunc("/health", handlers.ServeHealth)
-	mux.HandleFunc("/", handlers.ServeNotFound)
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" {
+			http.ServeFile(w, r, "index.html")
+			return
+		}
+		handlers.ServeNotFound(w, r)
+	})
 
 	srv := &http.Server{
 		Addr:         ":" + port,

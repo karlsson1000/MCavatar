@@ -8,5 +8,6 @@ RUN go build -o out ./cmd
 FROM alpine:latest
 WORKDIR /app
 COPY --from=builder /app/out .
+COPY --from=builder /app/index.html .
 EXPOSE 8080
 CMD ["./out"]

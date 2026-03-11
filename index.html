@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MCavatar - Minecraft avatar API</title>
+  <meta name="description" content="A fast and simple Minecraft avatar API." />
+  <link rel="icon" href="/avatar/5487e8c6ef7f4c4fbb8f9f0766259f6d/32" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="hero">
+    <div class="wrap">
+      <h1>
+        MCavatar
+        <span id="total-requests"></span>
+      </h1>
+      <p class="desc">Avatars, skins, body renders, and UUID lookups for any player.</p>
+      <div class="avatars-strip">
+        <img src="/avatar/853c80ef3c3749fdaa49938b674adae6/128" alt="jeb_" />
+        <img src="/avatar/61699b2ed3274a019f1e0ea8c3f06bc6/128" alt="Dinnerbone" />
+        <img src="/avatar/e6b5c088068044df9e1b9bf11792291b/128" alt="Grumm" />
+        <img src="/avatar/1e18d5ff643d45c8b50943b8461d8614/128" alt="deadmau5" />
+        <img src="/avatar/b876ec32e396476ba1158438d83c67d4/128" alt="Technoblade" />
+        <img src="/avatar/853c80ef3c3749fdaa49938b674adae6/128" alt="jeb_" />
+        <img src="/avatar/61699b2ed3274a019f1e0ea8c3f06bc6/128" alt="Dinnerbone" />
+        <img src="/avatar/e6b5c088068044df9e1b9bf11792291b/128" alt="Grumm" />
+        <img src="/avatar/1e18d5ff643d45c8b50943b8461d8614/128" alt="deadmau5" />
+      </div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <div class="wrap">
+      <div class="meta-inner">
+        <div class="meta-row">
+          <span class="meta-label">Base</span>
+          <span class="meta-value">https://avatar.mcindex.net/</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">User</span>
+          <span class="meta-note">username or UUID e.g. <code>Dinnerbone</code> or <code>61699b2e-d327-4a01-9f1e-0ea8c3f06bc6</code></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <div class="wrap">
+      <div class="endpoint" id="avatar">
+        <div class="endpoint-inner">
+          <div>
+            <h2>Avatar</h2>
+            <p class="desc">Player face with hat layer, rendered at the requested size.</p>
+            <div class="url-block" onclick="copyUrl(this, 'https://avatar.mcindex.net/avatar/user')">
+              <span class="dim">https://avatar.mcindex.net</span>/avatar/<span class="param">user</span>
+              <span class="copy-hint">copy</span>
+            </div>
+            <div class="url-block" onclick="copyUrl(this, 'https://avatar.mcindex.net/avatar/user/128')">
+              <span class="dim">https://avatar.mcindex.net</span>/avatar/<span class="param">user</span>/<span class="dim">128</span>
+              <span class="copy-hint">copy</span>
+            </div>
+            <p class="param-note">Optional size in pixels.</p>
+          </div>
+          <div class="preview">
+            <img src="/avatar/5487e8c6ef7f4c4fbb8f9f0766259f6d/128" width="128" height="128" alt="Avatar preview" />
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="body">
+        <div class="endpoint-inner">
+          <div>
+            <h2>Body</h2>
+            <p class="desc">Full front-facing body render.</p>
+            <div class="url-block" onclick="copyUrl(this, 'https://avatar.mcindex.net/body/user/128')">
+              <span class="dim">https://avatar.mcindex.net</span>/body/<span class="param">user</span>/<span class="dim">128</span>
+              <span class="copy-hint">copy</span>
+            </div>
+            <p class="param-note">Size in pixels (height). Width scales proportionally.</p>
+          </div>
+          <div class="preview">
+            <img src="/body/5487e8c6ef7f4c4fbb8f9f0766259f6d/128" width="64" height="128" alt="Body preview" />
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="bust">
+        <div class="endpoint-inner">
+          <div>
+            <h2>Bust</h2>
+            <p class="desc">Head and torso cropped render.</p>
+            <div class="url-block" onclick="copyUrl(this, 'https://avatar.mcindex.net/bust/user/128')">
+              <span class="dim">https://avatar.mcindex.net</span>/bust/<span class="param">user</span>/<span class="dim">128</span>
+              <span class="copy-hint">copy</span>
+            </div>
+            <p class="param-note">Size in pixels.</p>
+          </div>
+          <div class="preview">
+            <img src="/bust/5487e8c6ef7f4c4fbb8f9f0766259f6d/128" width="128" height="128" alt="Bust preview" />
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="skin">
+        <div class="endpoint-inner">
+          <div>
+            <h2>Skin</h2>
+            <p class="desc">Raw skin texture as a PNG.</p>
+            <div class="url-block" onclick="copyUrl(this, 'https://avatar.mcindex.net/skin/user')">
+              <span class="dim">https://avatar.mcindex.net</span>/skin/<span class="param">user</span>
+              <span class="copy-hint">copy</span>
+            </div>
+            <p class="param-note">Returns the original 64&times;64 skin file.</p>
+          </div>
+          <div class="preview">
+            <img src="/skin/5487e8c6ef7f4c4fbb8f9f0766259f6d" width="128" alt="Skin preview" />
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="uuid">
+        <div class="endpoint-inner no-preview">
+          <div>
+            <h2>UUID Lookup</h2>
+            <p class="desc">Returns the player's username and UUID as JSON.</p>
+            <div class="url-block" onclick="copyUrl(this, 'https://avatar.mcindex.net/uuid/user')">
+              <span class="dim">https://avatar.mcindex.net</span>/uuid/<span class="param">user</span>
+              <span class="copy-hint">copy</span>
+            </div>
+            <div class="json-block">
+              <span class="jk">{</span><br>
+              &nbsp;&nbsp;<span class="jk">"username"</span>: <span class="jv">"Notch"</span>,<br>
+              &nbsp;&nbsp;<span class="jk">"uuid"</span>: <span class="jv">"069a79f4-44e9-4726-a5be-fca90e38aaf5"</span>,<br>
+              &nbsp;&nbsp;<span class="jk">"trimmed_uuid"</span>: <span class="jv">"069a79f444e94726a5befca90e38aaf5"</span><br>
+              <span class="jk">}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="footer-left">MCavatar</span>
+      <a href="https://github.com/karlsson1000/MCavatar">GitHub</a>
+    </div>
+  </footer>
+
+  <script>
+    if (window.location.hash) history.replaceState(null, '', window.location.pathname);
+
+    function copyUrl(el, url) {
+      navigator.clipboard.writeText(url).then(() => {
+        const hint = el.querySelector('.copy-hint');
+        hint.textContent = 'copied';
+        el.classList.add('copied');
+        setTimeout(() => {
+          hint.textContent = 'copy';
+          el.classList.remove('copied');
+        }, 1500);
+      });
+    }
+
+    async function fetchHealth() {
+      try {
+        const res = await fetch('/health');
+        const data = await res.json();
+        document.getElementById('total-requests').textContent = data.total_requests.toLocaleString() + ' requests';
+      } catch {}
+    }
+
+    fetchHealth();
+  </script>
+
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --fg: #e8e8e8;
+      --muted: #555;
+      --border: #222;
+      --code-bg: #181818;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    img { image-rendering: pixelated; display: block; }
+    a { color: inherit; text-decoration: none; }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .hero { padding: 72px 0 48px; }
+
+    .hero h1 {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      font-size: clamp(2.4rem, 6vw, 3.8rem);
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin-bottom: 8px;
+    }
+
+    .hero h1 span {
+      font-size: 1.8rem;
+      font-weight: 400;
+      color: var(--muted);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .hero .desc {
+      font-size: 1rem;
+      color: var(--muted);
+      margin-bottom: 36px;
+    }
+
+    .avatars-strip { display: flex; gap: 8px; }
+
+    .avatars-strip img {
+      width: 64px;
+      height: 64px;
+      border-radius: 4px;
+      opacity: 0.85;
+    }
+
+    .meta {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+    }
+
+    .meta-inner { display: flex; flex-direction: column; gap: 8px; }
+
+    .meta-row { display: flex; align-items: baseline; gap: 14px; }
+
+    .meta-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      min-width: 50px;
+    }
+
+    .meta-value {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--fg);
+    }
+
+    .meta-note { font-size: 0.85rem; color: var(--muted); }
+
+    code {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--fg);
+    }
+
+    .endpoint {
+      border-bottom: 1px solid var(--border);
+      padding: 40px 0;
+    }
+
+    .endpoint-inner {
+      display: grid;
+      grid-template-columns: 1fr 120px;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .endpoint-inner.no-preview { grid-template-columns: 1fr; }
+
+    .endpoint h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .endpoint .desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .url-block {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.82rem;
+      background: var(--code-bg);
+      border-radius: 4px;
+      padding: 10px 14px;
+      color: #777;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+
+    .url-block:hover { background: #1e1e1e; }
+    .url-block .param { color: var(--fg); font-weight: 500; }
+    .url-block .dim { color: #444; }
+
+    .copy-hint {
+      font-size: 0.7rem;
+      color: var(--muted);
+      opacity: 0;
+      transition: opacity 0.15s;
+      margin-left: auto;
+      padding-left: 12px;
+      white-space: nowrap;
+    }
+
+    .url-block:hover .copy-hint { opacity: 1; }
+    .url-block.copied .copy-hint { opacity: 1; color: #4a9a4a; }
+
+    .param-note { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+
+    .json-block {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      background: var(--code-bg);
+      border-radius: 4px;
+      padding: 14px 16px;
+      line-height: 1.8;
+      margin-top: 12px;
+    }
+
+    .jk { color: var(--fg); }
+    .jv { color: #666; }
+
+    .preview { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .preview img { border-radius: 3px; }
+
+    footer { padding: 32px 0; }
+
+    footer .wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-left {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    footer a { font-size: 0.82rem; color: var(--muted); transition: color 0.15s; }
+    footer a:hover { color: var(--fg); }
+
+    @media (max-width: 600px) {
+      .endpoint-inner { grid-template-columns: 1fr; }
+      .preview { align-items: flex-start; }
+    }
+  </style>
+</body>
+</html>
