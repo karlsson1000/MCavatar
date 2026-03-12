@@ -8,7 +8,7 @@
   <link rel="icon" href="/avatar/5487e8c6ef7f4c4fbb8f9f0766259f6d/32" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap&font-display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 </head>
 <body>
 
@@ -16,7 +16,12 @@
     <div class="wrap">
       <h1>
         MCavatar
-        <span id="total-requests"></span>
+        <div class="search-wrap">
+          <input id="player-search" class="search-input" type="text" placeholder="" autocomplete="off" spellcheck="false" />
+          <button class="search-btn" onclick="goToAvatar()" aria-label="View avatar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
       </h1>
       <p class="desc">Avatars, skins, body renders, and UUID lookups for any player.</p>
       <div class="avatars-strip">
@@ -25,10 +30,11 @@
         <img src="/avatar/e6b5c088068044df9e1b9bf11792291b/128" width="64" height="64" alt="Grumm" />
         <img src="/avatar/1e18d5ff643d45c8b50943b8461d8614/128" width="64" height="64" alt="deadmau5" />
         <img src="/avatar/b876ec32e396476ba1158438d83c67d4/128" width="64" height="64" alt="Technoblade" />
-        <img src="/avatar/853c80ef3c3749fdaa49938b674adae6/128" width="64" height="64" alt="jeb_" />
-        <img src="/avatar/61699b2ed3274a019f1e0ea8c3f06bc6/128" width="64" height="64" alt="Dinnerbone" />
-        <img src="/avatar/e6b5c088068044df9e1b9bf11792291b/128" width="64" height="64" alt="Grumm" />
-        <img src="/avatar/1e18d5ff643d45c8b50943b8461d8614/128" width="64" height="64" alt="deadmau5" />
+        <img class="hide-mobile" src="/avatar/853c80ef3c3749fdaa49938b674adae6/128" width="64" height="64" alt="jeb_" />
+        <img class="hide-mobile" src="/avatar/61699b2ed3274a019f1e0ea8c3f06bc6/128" width="64" height="64" alt="Dinnerbone" />
+        <img class="hide-mobile" src="/avatar/e6b5c088068044df9e1b9bf11792291b/128" width="64" height="64" alt="Grumm" />
+        <img class="hide-mobile" src="/avatar/1e18d5ff643d45c8b50943b8461d8614/128" width="64" height="64" alt="deadmau5" />
+        <span id="total-requests"></span>
       </div>
     </div>
   </div>
@@ -148,7 +154,7 @@
     <div class="wrap">
       <span class="footer-left">MCavatar &copy; 2026</span>
       <a href="https://github.com/karlsson1000/MCavatar" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:inline-block;vertical-align:middle;margin-right:6px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:middle;margin-right:6px;">
           <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
         </svg>
         GitHub
@@ -159,22 +165,68 @@
   <script>
     if (window.location.hash) history.replaceState(null, '', window.location.pathname);
 
+    function goToAvatar() {
+      const val = document.getElementById('player-search').value.trim();
+      if (val) window.location.href = '/' + val.replace(/^\/+/, '');
+    }
+
+    const input = document.getElementById('player-search');
+
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') goToAvatar(); });
+    input.addEventListener('focus', () => { stopCycling(); input.placeholder = ''; });
+    input.addEventListener('blur', () => {
+      if (!input.value) { charIdx = 0; typing = true; input.placeholder = ''; startCycling(); }
+    });
+
+    const placeholders = [
+      { text: '/avatar/Dinnerbone' },
+      { text: '/body/Technoblade' },
+      { text: '/bust/jeb_' },
+      { text: '/skin/deadmau5' },
+      { text: '/uuid/Grumm' },
+    ];
+
+    let idx = 0, charIdx = 0, typing = true, timer = null, running = false;
+
+    function typePlaceholder() {
+      if (!running) return;
+      const { text } = placeholders[idx];
+      if (typing) {
+        input.placeholder = text.slice(0, ++charIdx);
+        if (charIdx >= text.length) { typing = false; timer = setTimeout(erasePlaceholder, 1400); return; }
+      }
+      timer = setTimeout(typePlaceholder, 75);
+    }
+
+    function erasePlaceholder() {
+      if (!running) return;
+      if (charIdx > 0) {
+        input.placeholder = placeholders[idx].text.slice(0, --charIdx);
+        timer = setTimeout(erasePlaceholder, 25);
+      } else {
+        idx = (idx + 1) % placeholders.length;
+        typing = true;
+        timer = setTimeout(typePlaceholder, 150);
+      }
+    }
+
+    function startCycling() { running = true; typePlaceholder(); }
+    function stopCycling() { running = false; clearTimeout(timer); }
+
+    startCycling();
+
     function copyUrl(el, url) {
       navigator.clipboard.writeText(url).then(() => {
         const hint = el.querySelector('.copy-hint');
         hint.textContent = 'copied';
         el.classList.add('copied');
-        setTimeout(() => {
-          hint.textContent = 'copy';
-          el.classList.remove('copied');
-        }, 1500);
+        setTimeout(() => { hint.textContent = 'copy'; el.classList.remove('copied'); }, 1500);
       });
     }
 
     async function fetchHealth() {
       try {
-        const res = await fetch('/health');
-        const data = await res.json();
+        const data = await (await fetch('/health')).json();
         document.getElementById('total-requests').textContent = data.total_requests.toLocaleString() + ' requests';
       } catch {}
     }
@@ -191,9 +243,7 @@
       --code-bg: #181818;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html { scroll-behavior: smooth; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
 
     body {
       font-family: 'Inter', sans-serif;
@@ -203,30 +253,17 @@
       line-height: 1.6;
     }
 
-    img {
-      image-rendering: pixelated;
-      display: block;
-    }
-
-    .avatars-strip img {
-      width: 64px;
-      height: 64px;
-      aspect-ratio: 1 / 1;
-    }
+    img { image-rendering: pixelated; display: block; }
 
     a { color: inherit; text-decoration: none; }
 
-    .wrap {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 0 32px;
-    }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 0 32px; }
 
     .hero { padding: 72px 0 48px; }
 
     .hero h1 {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       justify-content: space-between;
       font-size: clamp(2.4rem, 6vw, 3.8rem);
       font-weight: 600;
@@ -235,25 +272,55 @@
       margin-bottom: 8px;
     }
 
-    .hero h1 span {
+    .avatars-strip { display: flex; align-items: flex-end; gap: 8px; }
+    .avatars-strip img { border-radius: 4px; opacity: 0.85; width: 64px; height: 64px; }
+
+    #total-requests {
       font-size: 1.8rem;
       font-weight: 400;
       color: var(--muted);
-      font-family: 'Inter', sans-serif;
+      line-height: 1;
+      padding-bottom: 2px;
+      margin-left: 8px;
     }
 
-    .hero .desc {
-      font-size: 1rem;
-      color: var(--muted);
-      margin-bottom: 36px;
-    }
+    .hero .desc { font-size: 1rem; color: var(--muted); margin-bottom: 36px; }
 
-    .avatars-strip { display: flex; gap: 8px; }
-
-    .avatars-strip img {
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      max-width: 280px;
+      background: var(--code-bg);
       border-radius: 4px;
-      opacity: 0.85;
     }
+
+    .search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 10px 14px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--fg);
+    }
+
+    .search-input::placeholder { color: #777; }
+
+    .search-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      border-left: 1px solid #1e1e1e;
+      padding: 0 12px;
+      height: 38px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .search-btn:hover { color: var(--fg); }
 
     .meta {
       border-top: 1px solid var(--border);
@@ -262,25 +329,18 @@
     }
 
     .meta-inner { display: flex; flex-direction: column; gap: 8px; }
-
     .meta-row { display: flex; align-items: baseline; gap: 14px; }
 
     .meta-label {
       font-family: 'IBM Plex Mono', monospace;
       font-size: 0.7rem;
       font-weight: 500;
-      letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--muted);
       min-width: 50px;
     }
 
-    .meta-value {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.85rem;
-      color: var(--fg);
-    }
-
+    .meta-value { font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; color: var(--fg); }
     .meta-note { font-size: 0.85rem; color: var(--muted); }
 
     code {
@@ -292,10 +352,7 @@
       color: var(--fg);
     }
 
-    .endpoint {
-      border-bottom: 1px solid var(--border);
-      padding: 40px 0;
-    }
+    .endpoint { border-bottom: 1px solid var(--border); padding: 40px 0; }
 
     .endpoint-inner {
       display: grid;
@@ -305,19 +362,8 @@
     }
 
     .endpoint-inner.no-preview { grid-template-columns: 1fr; }
-
-    .endpoint h2 {
-      font-size: 1.15rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      margin-bottom: 4px;
-    }
-
-    .endpoint .desc {
-      font-size: 0.9rem;
-      color: var(--muted);
-      margin-bottom: 16px;
-    }
+    .endpoint h2 { font-size: 1.15rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 4px; }
+    .endpoint .desc { font-size: 0.9rem; color: var(--muted); margin-bottom: 16px; }
 
     .url-block {
       font-family: 'IBM Plex Mono', monospace;
@@ -345,12 +391,10 @@
       transition: opacity 0.15s;
       margin-left: auto;
       padding-left: 12px;
-      white-space: nowrap;
     }
 
     .url-block:hover .copy-hint { opacity: 1; }
     .url-block.copied .copy-hint { opacity: 1; color: #4a9a4a; }
-
     .param-note { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
 
     .json-block {
@@ -361,36 +405,39 @@
       padding: 14px 16px;
       line-height: 1.8;
       margin-top: 12px;
+      overflow-x: auto;
     }
 
     .jk { color: var(--fg); }
     .jv { color: #666; }
 
-    .preview { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .preview { display: flex; align-items: flex-end; }
     .preview img { border-radius: 3px; }
-
     footer { padding: 32px 0; }
-
-    footer .wrap {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .footer-left {
-      font-family: 'Inter', sans-serif;
-      font-size: 0.82rem;
-      color: var(--muted);
-    }
-
+    footer .wrap { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .footer-left { font-size: 0.82rem; color: var(--muted); }
     footer a { font-size: 0.82rem; color: var(--muted); transition: color 0.15s; }
     footer a:hover { color: var(--fg); }
 
     @media (max-width: 600px) {
-      .endpoint-inner { grid-template-columns: 1fr; }
+      .wrap { padding: 0 20px; }
+      .hero { padding: 40px 0 32px; }
+      .hero h1 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        font-size: clamp(2rem, 10vw, 2.8rem);
+      }
+
+      .search-wrap { max-width: 100%; width: 100%; }
+      .hide-mobile { display: none; }
+      .avatars-strip { gap: 6px; }
+      .avatars-strip img { width: 48px; height: 48px; }
+      #total-requests { font-size: 1.2rem; }
+      .endpoint { padding: 28px 0; }
+      .endpoint-inner { grid-template-columns: 1fr; gap: 20px; }
       .preview { align-items: flex-start; }
+      .url-block { font-size: 0.75rem; }
     }
   </style>
 </body>
