@@ -47,5 +47,7 @@ func main() {
 	}
 
 	log.Printf("listening on :%s", port)
-	log.Fatal(srv.ListenAndServe())
+	if err := srv.ListenAndServe(); err != nil {
+		log.Fatalf("server failed: %v", err)
+	}
 }
