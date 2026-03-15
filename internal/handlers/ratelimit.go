@@ -1,8 +1,9 @@
 package handlers
 
 import (
+	"net"
 	"net/http"
-	"strings"
+	"os"
 	"sync"
 	"time"
 )
@@ -18,13 +19,14 @@ type bucket struct {
 }
 
 var (
-	buckets   = map[string]*bucket{}
-	bucketsMu sync.Mutex
+	buckets       = map[string]*bucket{}
+	bucketsMu     sync.Mutex
+	trustedHeader = os.Getenv("TRUSTED_IP_HEADER")
 )
 
 func init() {
 	go func() {
-		ticker := time.NewTicker(5 * time.Minute)
+		ticker := time.NewTicker(rateWindow)
 		for range ticker.C {
 			bucketsMu.Lock()
 			now := time.Now()
@@ -39,10 +41,16 @@ func init() {
 }
 
 func getIP(r *http.Request) string {
-	if ip := r.Header.Get("CF-Connecting-IP"); ip != "" {
-		return ip
+	if trustedHeader != "" {
+		if ip := r.Header.Get(trustedHeader); ip != "" {
+			return ip
+		}
 	}
-	return strings.Split(r.RemoteAddr, ":")[0]
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return r.RemoteAddr
+	}
+	return host
 }
 
 func RateLimit(next http.HandlerFunc) http.HandlerFunc {
