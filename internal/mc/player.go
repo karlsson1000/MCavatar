@@ -49,18 +49,7 @@ func (s lookupStatus) uuidTTL() time.Duration {
 	}
 }
 
-func (s lookupStatus) skinTTL() time.Duration {
-	switch s {
-	case statusOK:
-		return ttlSuccess
-	case statusRateLimit:
-		return ttlRateLimit
-	default:
-		return ttlError
-	}
-}
-
-func (s lookupStatus) GetError(username string) error {
+func (s lookupStatus) getError(username string) error {
 	switch s {
 	case statusOK:
 		return nil
@@ -82,6 +71,10 @@ func statusFromHTTP(code int) lookupStatus {
 	default:
 		return statusError
 	}
+}
+
+func IsUUID(identifier string) bool {
+	return len(strings.ReplaceAll(identifier, "-", "")) == 32
 }
 
 var (
@@ -165,7 +158,7 @@ func LookupUUID(username string) (*Profile, error) {
 	c, ok := uuidCache[key]
 	uuidCacheMu.RUnlock()
 	if ok && time.Now().Before(c.expires) {
-		return c.profile, c.status.GetError(username)
+		return c.profile, c.status.getError(username)
 	}
 
 	v, err, _ := uuidGroup.Do(key, func() (any, error) {
@@ -223,13 +216,13 @@ func LookupUUID(username string) (*Profile, error) {
 	}
 
 	c = v.(*cachedUUID)
-	return c.profile, c.status.GetError(username)
+	return c.profile, c.status.getError(username)
 }
 
 // GetSkin fetches the skin for a username or UUID
 func GetSkin(identifier string) (image.Image, []byte, error) {
 	uuid := identifier
-	if len(strings.ReplaceAll(identifier, "-", "")) != 32 {
+	if !IsUUID(identifier) {
 		profile, err := LookupUUID(identifier)
 		if err != nil {
 			return nil, nil, err

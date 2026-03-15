@@ -16,7 +16,12 @@ func main() {
 		port = "8080"
 	}
 
-	stats.Init("/data/stats.db")
+	dbPath := os.Getenv("STATS_DB")
+	if dbPath == "" {
+		dbPath = "/data/stats.db"
+	}
+
+	stats.Init(dbPath)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/avatar/", handlers.RateLimit(handlers.TrackRequests(handlers.ServeAvatar)))
@@ -38,6 +43,7 @@ func main() {
 		Handler:      mux,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
 
 	log.Printf("listening on :%s", port)
