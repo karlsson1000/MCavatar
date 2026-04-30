@@ -11,6 +11,7 @@ import (
 func writePNG(w http.ResponseWriter, data []byte) {
 	w.Header().Set("Content-Type", "image/png")
 	w.Header().Set("Cache-Control", "public, max-age=43200")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(data)
 }
 
