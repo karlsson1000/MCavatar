@@ -2,11 +2,62 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"sync"
+	"time"
 
 	"mcavatar/internal/mc"
 	"mcavatar/internal/stats"
 )
+
+const renderCacheTTL = 12 * time.Hour
+
+type renderEntry struct {
+	data    []byte
+	expires time.Time
+}
+
+var (
+	renderCache   = map[string]*renderEntry{}
+	renderCacheMu sync.Mutex
+)
+
+func init() {
+	go func() {
+		ticker := time.NewTicker(30 * time.Minute)
+		for range ticker.C {
+			now := time.Now()
+			renderCacheMu.Lock()
+			for k, v := range renderCache {
+				if now.After(v.expires) {
+					delete(renderCache, k)
+				}
+			}
+			renderCacheMu.Unlock()
+		}
+	}()
+}
+
+func cachedRender(key string, fn func() ([]byte, error)) ([]byte, error) {
+	renderCacheMu.Lock()
+	if e, ok := renderCache[key]; ok && time.Now().Before(e.expires) {
+		renderCacheMu.Unlock()
+		return e.data, nil
+	}
+	renderCacheMu.Unlock()
+
+	data, err := fn()
+	if err != nil {
+		return nil, err
+	}
+
+	renderCacheMu.Lock()
+	renderCache[key] = &renderEntry{data: data, expires: time.Now().Add(renderCacheTTL)}
+	renderCacheMu.Unlock()
+
+	return data, nil
+}
 
 func writePNG(w http.ResponseWriter, data []byte) {
 	w.Header().Set("Content-Type", "image/png")
@@ -58,7 +109,9 @@ func ServeAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := mc.EncodePNG(mc.ResizeNearest(mc.ExtractHelm(skin), size, size))
+	out, err := cachedRender(fmt.Sprintf("avatar:%s:%d", identifier, size), func() ([]byte, error) {
+		return mc.EncodePNG(mc.ResizeNearest(mc.ExtractHelm(skin), size, size))
+	})
 	if err != nil {
 		writeError(w, 500, "image encoding failed")
 		return
@@ -94,7 +147,9 @@ func ServeBody(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := mc.EncodePNG(mc.ResizeNearest(mc.ExtractBody(skin), size/2, size))
+	out, err := cachedRender(fmt.Sprintf("body:%s:%d", identifier, size), func() ([]byte, error) {
+		return mc.EncodePNG(mc.ResizeNearest(mc.ExtractBody(skin), size/2, size))
+	})
 	if err != nil {
 		writeError(w, 500, "image encoding failed")
 		return
@@ -115,7 +170,9 @@ func ServeBust(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := mc.EncodePNG(mc.ResizeNearest(mc.ExtractBust(skin), size, size))
+	out, err := cachedRender(fmt.Sprintf("bust:%s:%d", identifier, size), func() ([]byte, error) {
+		return mc.EncodePNG(mc.ResizeNearest(mc.ExtractBust(skin), size, size))
+	})
 	if err != nil {
 		writeError(w, 500, "image encoding failed")
 		return
