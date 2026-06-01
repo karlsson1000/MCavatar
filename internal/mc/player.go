@@ -19,6 +19,8 @@ import (
 const (
 	mojangProfileURL = "https://api.mojang.com/users/profiles/minecraft/%s"
 	mojangSessionURL = "https://sessionserver.mojang.com/session/minecraft/profile/%s"
+	geyserSkinURL    = "https://api.geysermc.org/v2/skin/%s"
+	minecraftTexture = "https://textures.minecraft.net/texture/%s"
 
 	ttlSuccess   = 12 * time.Hour
 	ttlUnknown   = 7 * 24 * time.Hour
@@ -77,6 +79,28 @@ func IsUUID(identifier string) bool {
 	return len(strings.ReplaceAll(identifier, "-", "")) == 32
 }
 
+func isBedrockUUID(uuid string) bool {
+	trimmed := strings.ReplaceAll(uuid, "-", "")
+	if len(trimmed) != 32 {
+		return false
+	}
+	return trimmed[:16] == "0000000000000000"
+}
+
+func xuidFromUUID(uuid string) (string, error) {
+	trimmed := strings.ToLower(strings.ReplaceAll(uuid, "-", ""))
+	if len(trimmed) != 32 {
+		return "", fmt.Errorf("invalid uuid")
+	}
+	lower := trimmed[16:]
+	var xuid uint64
+	_, err := fmt.Sscanf(lower, "%016x", &xuid)
+	if err != nil {
+		return "", fmt.Errorf("parse xuid: %w", err)
+	}
+	return fmt.Sprintf("%d", xuid), nil
+}
+
 var (
 	httpClient = &http.Client{Timeout: 5 * time.Second}
 
@@ -111,6 +135,11 @@ type texturePayload struct {
 			URL string `json:"url"`
 		} `json:"SKIN"`
 	} `json:"textures"`
+}
+
+type geyserSkinResponse struct {
+	IsSteve   bool   `json:"is_steve"`
+	TextureID string `json:"texture_id"`
 }
 
 type cachedSkin struct {
@@ -221,7 +250,7 @@ func LookupUUID(username string) (*Profile, error) {
 
 // GetSkin fetches the skin for a username or UUID
 func GetSkin(identifier string) (image.Image, []byte, error) {
-	uuid := identifier
+	uuid := strings.ToLower(strings.ReplaceAll(identifier, "-", ""))
 	if !IsUUID(identifier) {
 		profile, err := LookupUUID(identifier)
 		if err != nil {
@@ -240,12 +269,34 @@ func GetSkin(identifier string) (image.Image, []byte, error) {
 		return c.img, c.raw, nil
 	}
 
-	skinURL, err := fetchSkinURL(uuid)
-	if err != nil {
-		return nil, nil, err
-	}
+	v, _, _ := skinGroup.Do(uuid, func() (any, error) {
+		var skinURL string
+		var err error
 
-	v, err, _ := skinGroup.Do(uuid, func() (any, error) {
+		if isBedrockUUID(uuid) {
+			skinURL, err = fetchGeyserSkinURL(uuid)
+		} else {
+			skinURL, err = fetchSkinURL(uuid)
+		}
+
+		if err != nil {
+			skinCacheMu.RLock()
+			stale, hasStale := skinCache[uuid]
+			skinCacheMu.RUnlock()
+			if hasStale && stale.status == statusOK {
+				return stale, nil
+			}
+			status := statusError
+			if strings.Contains(err.Error(), "rate limit") {
+				status = statusRateLimit
+			}
+			cached := &cachedSkin{expires: time.Now().Add(status.uuidTTL()), status: status}
+			skinCacheMu.Lock()
+			skinCache[uuid] = cached
+			skinCacheMu.Unlock()
+			return cached, nil
+		}
+
 		img, raw, err := fetchPNG(skinURL)
 		if err != nil {
 			skinCacheMu.RLock()
@@ -267,9 +318,6 @@ func GetSkin(identifier string) (image.Image, []byte, error) {
 		skinCacheMu.Unlock()
 		return cached, nil
 	})
-	if err != nil {
-		return nil, nil, err
-	}
 
 	result := v.(*cachedSkin)
 	if result.img == nil {
@@ -285,6 +333,41 @@ func FormatUUID(id string) string {
 	return fmt.Sprintf("%s-%s-%s-%s-%s", id[0:8], id[8:12], id[12:16], id[16:20], id[20:])
 }
 
+func fetchGeyserSkinURL(uuid string) (string, error) {
+	xuid, err := xuidFromUUID(uuid)
+	if err != nil {
+		return "", fmt.Errorf("invalid bedrock uuid: %w", err)
+	}
+
+	resp, err := httpClient.Get(fmt.Sprintf(geyserSkinURL, xuid))
+	if err != nil {
+		log.Printf("geyser lookup failed for xuid %s: %v", xuid, err)
+		return "", fmt.Errorf("could not fetch bedrock skin")
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 429 {
+		log.Printf("geyser API rate limited for xuid %s", xuid)
+		return "", fmt.Errorf("rate limit exceeded")
+	}
+	if resp.StatusCode != 200 {
+		log.Printf("geyser API error for xuid %s: %s", xuid, resp.Status)
+		return "", fmt.Errorf("could not fetch bedrock skin")
+	}
+
+	var geyser geyserSkinResponse
+	if err := json.NewDecoder(resp.Body).Decode(&geyser); err != nil {
+		log.Printf("decode geyser response for xuid %s: %v", xuid, err)
+		return "", fmt.Errorf("could not fetch bedrock skin")
+	}
+
+	if geyser.TextureID == "" {
+		return "", fmt.Errorf("no skin found for bedrock player")
+	}
+
+	return fmt.Sprintf(minecraftTexture, geyser.TextureID), nil
+}
+
 func fetchSkinURL(uuid string) (string, error) {
 	resp, err := httpClient.Get(fmt.Sprintf(mojangSessionURL, uuid))
 	if err != nil {
@@ -293,6 +376,10 @@ func fetchSkinURL(uuid string) (string, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == 429 {
+		log.Printf("session API rate limited for %q", uuid)
+		return "", fmt.Errorf("rate limit exceeded")
+	}
 	if resp.StatusCode != 200 {
 		log.Printf("session API error for %q: %s", uuid, resp.Status)
 		return "", fmt.Errorf("could not fetch skin")
