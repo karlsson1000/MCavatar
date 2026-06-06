@@ -51,14 +51,14 @@ func (s lookupStatus) uuidTTL() time.Duration {
 	}
 }
 
-func (s lookupStatus) getError(username string) error {
+func (s lookupStatus) getError(identifier string) error {
 	switch s {
 	case statusOK:
 		return nil
 	case statusUnknown:
-		return fmt.Errorf("player not found: %s", username)
+		return fmt.Errorf("player not found: %s", identifier)
 	default:
-		return fmt.Errorf("could not look up player: %s", username)
+		return fmt.Errorf("could not look up player: %s", identifier)
 	}
 }
 
@@ -180,20 +180,27 @@ func init() {
 	}()
 }
 
-func LookupUUID(username string) (*Profile, error) {
-	key := strings.ToLower(username)
+func LookupUUID(identifier string) (*Profile, error) {
+	key := strings.ToLower(strings.ReplaceAll(identifier, "-", ""))
 
 	uuidCacheMu.RLock()
 	c, ok := uuidCache[key]
 	uuidCacheMu.RUnlock()
 	if ok && time.Now().Before(c.expires) {
-		return c.profile, c.status.getError(username)
+		return c.profile, c.status.getError(identifier)
 	}
 
 	v, err, _ := uuidGroup.Do(key, func() (any, error) {
-		resp, err := httpClient.Get(fmt.Sprintf(mojangProfileURL, username))
+		var url string
+		if IsUUID(identifier) {
+			url = fmt.Sprintf(mojangSessionURL, key)
+		} else {
+			url = fmt.Sprintf(mojangProfileURL, identifier)
+		}
+
+		resp, err := httpClient.Get(url)
 		if err != nil {
-			log.Printf("mojang lookup failed for %q: %v", username, err)
+			log.Printf("lookup failed for %q: %v", identifier, err)
 			uuidCacheMu.RLock()
 			stale, hasStale := uuidCache[key]
 			uuidCacheMu.RUnlock()
@@ -210,7 +217,7 @@ func LookupUUID(username string) (*Profile, error) {
 
 		s := statusFromHTTP(resp.StatusCode)
 		if s != statusOK {
-			log.Printf("mojang API non-OK for %q: %s", username, resp.Status)
+			log.Printf("mojang API non-OK for %q: %s", identifier, resp.Status)
 			uuidCacheMu.RLock()
 			stale, hasStale := uuidCache[key]
 			uuidCacheMu.RUnlock()
@@ -226,7 +233,7 @@ func LookupUUID(username string) (*Profile, error) {
 
 		var profile Profile
 		if err := json.NewDecoder(resp.Body).Decode(&profile); err != nil {
-			log.Printf("decode profile for %q: %v", username, err)
+			log.Printf("decode profile for %q: %v", identifier, err)
 			cached := &cachedUUID{expires: time.Now().Add(ttlError), status: statusError}
 			uuidCacheMu.Lock()
 			uuidCache[key] = cached
@@ -245,7 +252,7 @@ func LookupUUID(username string) (*Profile, error) {
 	}
 
 	c = v.(*cachedUUID)
-	return c.profile, c.status.getError(username)
+	return c.profile, c.status.getError(identifier)
 }
 
 // GetSkin fetches the skin for a username or UUID

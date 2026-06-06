@@ -183,7 +183,7 @@ func ServeBust(w http.ResponseWriter, r *http.Request) {
 func ServeUUID(w http.ResponseWriter, r *http.Request) {
 	identifier, _ := mc.ParseRoute(r.URL.Path, "/uuid/")
 	if identifier == "" {
-		writeError(w, 400, "username required")
+		writeError(w, 400, "username or UUID required")
 		return
 	}
 
