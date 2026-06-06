@@ -68,6 +68,7 @@ func writePNG(w http.ResponseWriter, data []byte) {
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(v)
 }
@@ -84,7 +85,6 @@ func TrackRequests(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func ServeHealth(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	writeJSON(w, 200, map[string]any{
 		"api":            "mcavatar",
 		"status":         "ok",
