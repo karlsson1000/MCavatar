@@ -66,7 +66,7 @@ func statusFromHTTP(code int) lookupStatus {
 	switch code {
 	case 200:
 		return statusOK
-	case 404:
+	case 204, 404:
 		return statusUnknown
 	case 429:
 		return statusRateLimit
@@ -102,7 +102,7 @@ func xuidFromUUID(uuid string) (string, error) {
 }
 
 var (
-	httpClient = &http.Client{Timeout: 5 * time.Second}
+	httpClient = &http.Client{Timeout: 10 * time.Second}
 
 	skinCache   = map[string]*cachedSkin{}
 	skinCacheMu sync.RWMutex
@@ -181,6 +181,10 @@ func init() {
 }
 
 func LookupUUID(identifier string) (*Profile, error) {
+	if strings.ContainsAny(identifier, "${}") {
+		return nil, fmt.Errorf("invalid player identifier: %s", identifier)
+	}
+
 	key := strings.ToLower(strings.ReplaceAll(identifier, "-", ""))
 
 	uuidCacheMu.RLock()
@@ -257,6 +261,10 @@ func LookupUUID(identifier string) (*Profile, error) {
 
 // GetSkin fetches the skin for a username or UUID
 func GetSkin(identifier string) (image.Image, []byte, error) {
+	if strings.ContainsAny(identifier, "${}") {
+		return nil, nil, fmt.Errorf("invalid player identifier: %s", identifier)
+	}
+
 	uuid := strings.ToLower(strings.ReplaceAll(identifier, "-", ""))
 	if !IsUUID(identifier) {
 		profile, err := LookupUUID(identifier)
